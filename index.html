@@ -249,18 +249,20 @@ canvas {
 
 .bottom-text {
   width: 100%;
-  min-height: clamp(18px, 3.2dvh, 22px);
+  min-height: 18px;
   padding-bottom: 2px;
-  font-size: clamp(10px, 3.2vw, 15px);
+
+  font-size: clamp(10px, 3vw, 14px);
   line-height: 1.15;
   color: #aaaaaa;
   text-align: center;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  white-space: normal;
 }
 
 .shade {
@@ -485,7 +487,76 @@ canvas {
     bottom: 7px;
   }
 }
+@media (max-height: 540px) {
+  .app {
+    padding:
+      calc(env(safe-area-inset-top) + 4px)
+      8px
+      calc(env(safe-area-inset-bottom) + 5px);
+  }
 
+  .content {
+    gap: 4px;
+  }
+
+  .header {
+    gap: 4px;
+  }
+
+  .footer {
+    gap: 2px;
+  }
+
+  .top-text,
+  .bottom-text {
+    display: none;
+  }
+
+  h1 {
+    display: none;
+  }
+
+  .top-bar {
+    height: 30px;
+  }
+
+  .icon-btn {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    border-radius: 10px;
+    font-size: 17px;
+  }
+
+  .login-btn {
+    height: 30px;
+    font-size: 13px;
+    padding: 0 12px;
+  }
+
+  .mode-buttons button {
+    height: 30px;
+    font-size: 13px;
+  }
+
+  .camera-box {
+    border-radius: 16px;
+  }
+
+  #scanBtn {
+    height: 34px;
+    bottom: 8px;
+    padding: 0 16px;
+    font-size: 14px;
+  }
+
+  .result {
+    min-height: 26px;
+    max-height: 38px;
+    font-size: clamp(14px, 4vw, 18px);
+    line-height: 1.05;
+  }
+}
 @media (max-height: 520px) {
   .login-btn {
     padding: 0 12px;
