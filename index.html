@@ -1384,9 +1384,6 @@ function getLineSample(line) {
   };
 }
 
-function colorFromSample(sample, alpha = 0.8) {
-  return `rgba(${sample.r}, ${sample.g}, ${sample.b}, ${alpha})`;
-}
 
 function addLiveAverage(left, right) {
   const now = performance.now();
@@ -1435,33 +1432,26 @@ function formatResult(avg, digits) {
   return t("sameBrightness");
 }
 
-function drawLine(line, isDarker, color) {
+function drawLine(line, isDarker) {
   const box = cameraBox.getBoundingClientRect();
 
   const x = line.x / 100 * box.width;
   const y1 = lineY1 / 100 * box.height;
   const y2 = lineY2 / 100 * box.height;
 
+  ctx.lineWidth = 7;
   ctx.lineCap = "round";
 
-  if (isDarker) {
-    ctx.lineWidth = 13;
-    ctx.strokeStyle = "rgba(255, 70, 70, 0.55)";
-    ctx.beginPath();
-    ctx.moveTo(x, y1);
-    ctx.lineTo(x, y2);
-    ctx.stroke();
-  }
-
-  ctx.lineWidth = 7;
-  ctx.strokeStyle = color;
+  ctx.strokeStyle = isDarker
+    ? "rgba(255, 70, 70, 0.55)"
+    : "rgba(0, 255, 150, 0.42)";
 
   ctx.beginPath();
   ctx.moveTo(x, y1);
   ctx.lineTo(x, y2);
   ctx.stroke();
 
-  ctx.fillStyle = color;
+  ctx.fillStyle = "rgba(255,255,255,0.45)";
 
   ctx.beginPath();
   ctx.arc(x, y1, 8, 0, Math.PI * 2);
@@ -1470,17 +1460,6 @@ function drawLine(line, isDarker, color) {
   ctx.beginPath();
   ctx.arc(x, y2, 8, 0, Math.PI * 2);
   ctx.fill();
-
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = "rgba(255,255,255,0.65)";
-
-  ctx.beginPath();
-  ctx.arc(x, y1, 8, 0, Math.PI * 2);
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.arc(x, y2, 8, 0, Math.PI * 2);
-  ctx.stroke();
 }
 
 function loop() {
@@ -1573,17 +1552,8 @@ function loop() {
       }
     }
 
-    drawLine(
-      visual.left,
-      drawAverage.left < drawAverage.right,
-      colorFromSample(leftSample, 0.9)
-    );
-
-    drawLine(
-      visual.right,
-      drawAverage.right < drawAverage.left,
-      colorFromSample(rightSample, 0.9)
-    );
+drawLine(visual.left, drawAverage.left < drawAverage.right);
+drawLine(visual.right, drawAverage.right < drawAverage.left);
   }
 
   requestAnimationFrame(loop);
