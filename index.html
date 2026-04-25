@@ -813,7 +813,6 @@ const I18N = {
     name: "Имя",
     password: "Пароль",
     enter: "Войти",
-
     cameraClosed: "Камера не открыта",
     liveMode: "Живой режим",
     scanReady: "Зафиксируйте камеру и нажмите сканирование",
@@ -844,7 +843,6 @@ const I18N = {
     name: "Аты",
     password: "Құпиясөз",
     enter: "Кіру",
-
     cameraClosed: "Камера ашылмаған",
     liveMode: "Тікелей режим",
     scanReady: "Камераны бекітіп, сканерлеуді басыңыз",
@@ -875,7 +873,6 @@ const I18N = {
     name: "Name",
     password: "Password",
     enter: "Log in",
-
     cameraClosed: "Camera is not open",
     liveMode: "Live mode",
     scanReady: "Hold the camera still and press scan",
@@ -895,7 +892,6 @@ let currentLang = "ru";
 let cameraStarted = false;
 let imageLoaded = false;
 let activeSource = null;
-let animationStarted = false;
 let mode = "live";
 
 const lines = [
@@ -940,7 +936,11 @@ function applyLanguage() {
     el.placeholder = t(el.dataset.i18nPlaceholder);
   });
 
-  if (loginBtn.textContent === I18N.ru.guest || loginBtn.textContent === I18N.kk.guest || loginBtn.textContent === I18N.en.guest) {
+  if (
+    loginBtn.textContent === I18N.ru.guest ||
+    loginBtn.textContent === I18N.kk.guest ||
+    loginBtn.textContent === I18N.en.guest
+  ) {
     loginBtn.textContent = t("guest");
   }
 
@@ -1048,11 +1048,6 @@ imageInput.addEventListener("change", () => {
     scanModeBtn.classList.add("secondary");
 
     result.textContent = t("imageLoaded");
-
-    if (!animationStarted) {
-      animationStarted = true;
-      loop();
-    }
   };
 
   photoImage.src = url;
@@ -1132,11 +1127,6 @@ startBtn.addEventListener("click", async e => {
       result.textContent = mode === "live"
         ? t("liveMode")
         : t("scanReady");
-
-      if (!animationStarted) {
-        animationStarted = true;
-        loop();
-      }
     };
 
   } catch (err) {
@@ -1163,13 +1153,11 @@ cameraBox.addEventListener("pointerdown", e => {
 
   e.preventDefault();
 
-  isDraggingLine = true;
-
   const pos = getPointerPercent(e);
   const visual = getVisualLines();
 
-  const HANDLE_RADIUS = 12;
-  const LINE_TOUCH_RADIUS = 20;
+  const HANDLE_RADIUS = 13;
+  const LINE_TOUCH_RADIUS = 26;
 
   const leftTop = distance(pos.x, pos.y, visual.left.x, lineY1);
   const leftBottom = distance(pos.x, pos.y, visual.left.x, lineY2);
@@ -1185,6 +1173,7 @@ cameraBox.addEventListener("pointerdown", e => {
         : "bottom";
 
     activeLine = null;
+    isDraggingLine = true;
     cameraBox.setPointerCapture(e.pointerId);
     return;
   }
@@ -1211,6 +1200,7 @@ cameraBox.addEventListener("pointerdown", e => {
       : lines.indexOf(visual.right);
 
     resizingEdge = null;
+    isDraggingLine = true;
     cameraBox.setPointerCapture(e.pointerId);
     return;
   }
@@ -1219,6 +1209,7 @@ cameraBox.addEventListener("pointerdown", e => {
   resizingEdge = null;
   isDraggingLine = false;
 });
+
 cameraBox.addEventListener("pointermove", e => {
   if (activeLine === null && resizingEdge === null) return;
 
@@ -1227,22 +1218,24 @@ cameraBox.addEventListener("pointermove", e => {
   const pos = getPointerPercent(e);
 
   if (resizingEdge === "top") {
-    lineY1 = clamp(pos.y, 5, lineY2 - 12);
+    lineY1 = clamp(pos.y, 5, lineY2 - 6);
     return;
   }
 
   if (resizingEdge === "bottom") {
-    lineY2 = clamp(pos.y, lineY1 + 12, 95);
+    lineY2 = clamp(pos.y, lineY1 + 6, 95);
     return;
   }
 
   if (activeLine !== null) {
     lines[activeLine].x = clamp(pos.x, 6, 94);
+    return;
   }
 });
 
 cameraBox.addEventListener("pointerup", stopDrag);
 cameraBox.addEventListener("pointercancel", stopDrag);
+cameraBox.addEventListener("lostpointercapture", stopDrag);
 
 function stopDrag(e) {
   if (e) e.preventDefault();
@@ -1260,6 +1253,7 @@ function stopDrag(e) {
     result.textContent = t("positionChanged");
   }
 }
+
 function getPointerPercent(e) {
   const rect = cameraBox.getBoundingClientRect();
 
@@ -1272,9 +1266,19 @@ function getPointerPercent(e) {
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
+
 function distance(x1, y1, x2, y2) {
   return Math.hypot(x1 - x2, y1 - y2);
 }
+
+function distanceToVerticalSegment(px, py, lineX, y1, y2) {
+  const top = Math.min(y1, y2);
+  const bottom = Math.max(y1, y2);
+  const closestY = clamp(py, top, bottom);
+
+  return distance(px, py, lineX, closestY);
+}
+
 function resizeCanvas() {
   const box = cameraBox.getBoundingClientRect();
   const pixelRatio = window.devicePixelRatio || 1;
@@ -1355,9 +1359,6 @@ function getLineSample(line) {
   const steps = 120;
 
   let totalBrightness = 0;
-  let totalR = 0;
-  let totalG = 0;
-  let totalB = 0;
 
   for (let i = 0; i < steps; i++) {
     const t = i / (steps - 1);
@@ -1365,25 +1366,16 @@ function getLineSample(line) {
 
     const pixel = hiddenCtx.getImageData(x, y, 1, 1).data;
 
-    const r = pixel[0];
-    const g = pixel[1];
-    const b = pixel[2];
-
-    totalR += r;
-    totalG += g;
-    totalB += b;
-
-    totalBrightness += 0.299 * r + 0.587 * g + 0.114 * b;
+    totalBrightness +=
+      0.299 * pixel[0] +
+      0.587 * pixel[1] +
+      0.114 * pixel[2];
   }
 
   return {
-    brightness: totalBrightness / steps,
-    r: Math.round(totalR / steps),
-    g: Math.round(totalG / steps),
-    b: Math.round(totalB / steps)
+    brightness: totalBrightness / steps
   };
 }
-
 
 function addLiveAverage(left, right) {
   const now = performance.now();
@@ -1552,12 +1544,13 @@ function loop() {
       }
     }
 
-drawLine(visual.left, drawAverage.left < drawAverage.right);
-drawLine(visual.right, drawAverage.right < drawAverage.left);
+    drawLine(visual.left, drawAverage.left < drawAverage.right);
+    drawLine(visual.right, drawAverage.right < drawAverage.left);
   }
 
   requestAnimationFrame(loop);
 }
+
 applyLanguage();
 loop();
 </script>
