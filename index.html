@@ -253,12 +253,8 @@ canvas,
   box-shadow: 0 10px 30px rgba(0,255,170,.35);
 }
 
-#uploadBtn {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  z-index: 6;
-  max-width: calc(100% - 20px);
+.upload-footer-btn {
+  width: min(100%, 260px);
   height: clamp(32px, 5.2dvh, 38px);
   padding: 0 14px;
   font-size: clamp(12px, 3.3vw, 14px);
@@ -267,7 +263,7 @@ canvas,
   text-overflow: ellipsis;
   background: rgba(255,255,255,.18);
   color: white;
-  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  box-shadow: 0 8px 24px rgba(0,0,0,.28);
 }
 
 #scanBtn {
@@ -600,13 +596,11 @@ canvas,
     border-radius: 16px;
   }
 
-  #uploadBtn {
-    height: 30px;
-    font-size: 12px;
-    padding: 0 10px;
-    top: 8px;
-    right: 8px;
-  }
+.upload-footer-btn {
+  height: 30px;
+  font-size: 12px;
+  padding: 0 10px;
+}
 
   #scanBtn {
     height: 34px;
@@ -683,25 +677,28 @@ canvas,
       </div>
     </div>
 
-    <div class="camera-box" id="cameraBox">
-      <video id="video" autoplay playsinline muted></video>
-      <img id="photoImage" alt="">
-      <canvas id="overlay"></canvas>
+<div class="camera-box" id="cameraBox">
+  <video id="video" autoplay playsinline muted></video>
+  <img id="photoImage" alt="">
+  <canvas id="overlay"></canvas>
 
-      <input id="imageInput" type="file" accept="image/*" hidden>
+  <input id="imageInput" type="file" accept="image/*" hidden>
 
-      <button id="uploadBtn" data-i18n="uploadImage">Загрузить изображение</button>
-      <button id="startBtn" data-i18n="openCamera">Открыть камеру</button>
-      <button id="scanBtn" data-i18n="scan10">Сканировать 10 секунд</button>
-    </div>
+  <button id="startBtn" data-i18n="openCamera">Открыть камеру</button>
+  <button id="scanBtn" data-i18n="scan10">Сканировать 10 секунд</button>
+</div>
 
-    <div class="footer">
-      <div class="result" id="result">Камера не открыта</div>
+<div class="footer">
+  <button id="uploadBtn" class="upload-footer-btn" data-i18n="uploadImage">
+    Загрузить изображение
+  </button>
 
-      <div class="bottom-text" data-i18n="bottomText">
-        Более тёмная линия подсвечивается красным
-      </div>
-    </div>
+  <div class="result" id="result">Камера не открыта</div>
+
+  <div class="bottom-text" data-i18n="bottomText">
+    Более тёмная линия подсвечивается красным
+  </div>
+</div>
 
   </div>
 </div>
@@ -1166,24 +1163,50 @@ cameraBox.addEventListener("pointerdown", e => {
   e.preventDefault();
 
   const pos = getPointerPercent(e);
+  const visual = getVisualLines();
 
-  const dLine0 = Math.abs(pos.x - lines[0].x);
-  const dLine1 = Math.abs(pos.x - lines[1].x);
+  const HANDLE_RADIUS = 7;
+  const LINE_TOUCH_RADIUS = 8;
 
-  const dTop = Math.abs(pos.y - lineY1);
-  const dBottom = Math.abs(pos.y - lineY2);
+  const leftTop = distance(pos.x, pos.y, visual.left.x, lineY1);
+  const leftBottom = distance(pos.x, pos.y, visual.left.x, lineY2);
+  const rightTop = distance(pos.x, pos.y, visual.right.x, lineY1);
+  const rightBottom = distance(pos.x, pos.y, visual.right.x, lineY2);
 
-  if (dTop < 7) {
-    resizingEdge = "top";
+  const nearestHandle = Math.min(leftTop, leftBottom, rightTop, rightBottom);
+
+  if (nearestHandle <= HANDLE_RADIUS) {
+    if (nearestHandle === leftTop || nearestHandle === rightTop) {
+      resizingEdge = "top";
+    } else {
+      resizingEdge = "bottom";
+    }
+
     activeLine = null;
-  } else if (dBottom < 7) {
-    resizingEdge = "bottom";
-    activeLine = null;
-  } else {
-    activeLine = dLine0 < dLine1 ? 0 : 1;
-    resizingEdge = null;
+    cameraBox.setPointerCapture(e.pointerId);
+    return;
   }
 
+  const withinY = pos.y >= lineY1 && pos.y <= lineY2;
+
+  const dLeftLine = Math.abs(pos.x - visual.left.x);
+  const dRightLine = Math.abs(pos.x - visual.right.x);
+
+  if (withinY && Math.min(dLeftLine, dRightLine) <= LINE_TOUCH_RADIUS) {
+    activeLine = dLeftLine <= dRightLine
+      ? lines.indexOf(visual.left)
+      : lines.indexOf(visual.right);
+
+    resizingEdge = null;
+    cameraBox.setPointerCapture(e.pointerId);
+    return;
+  }
+
+  activeLine = dLeftLine <= dRightLine
+    ? lines.indexOf(visual.left)
+    : lines.indexOf(visual.right);
+
+  resizingEdge = null;
   cameraBox.setPointerCapture(e.pointerId);
 });
 
@@ -1238,7 +1261,9 @@ function getPointerPercent(e) {
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
-
+function distance(x1, y1, x2, y2) {
+  return Math.hypot(x1 - x2, y1 - y2);
+}
 function resizeCanvas() {
   const box = cameraBox.getBoundingClientRect();
   const pixelRatio = window.devicePixelRatio || 1;
@@ -1408,7 +1433,10 @@ function drawLine(line, isDarker) {
 }
 
 function loop() {
-  if (!hasSource()) return;
+  if (!hasSource()) {
+    requestAnimationFrame(loop);
+    return;
+  }
 
   let sourceReady = false;
 
@@ -1486,6 +1514,7 @@ function loop() {
 }
 
 applyLanguage();
+loop();
 </script>
 
 </body>
