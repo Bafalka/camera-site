@@ -237,6 +237,168 @@
       font-size: 10px;
     }
   }
+   .shade {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+    z-index: 20;
+  }
+
+  .shade.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .side-menu {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: min(82vw, 310px);
+    height: var(--app-height, 100dvh);
+    padding:
+      calc(env(safe-area-inset-top) + 14px)
+      14px
+      calc(env(safe-area-inset-bottom) + 14px);
+    background: rgba(18,18,18,.96);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    transform: translateX(-105%);
+    transition: transform .28s ease;
+    z-index: 30;
+    box-shadow: 20px 0 50px rgba(0,0,0,.45);
+    border-right: 1px solid rgba(255,255,255,.12);
+  }
+
+  .side-menu.open {
+    transform: translateX(0);
+  }
+
+  .side-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .side-menu-header strong {
+    display: block;
+    font-size: 22px;
+  }
+
+  .side-menu-header span {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+    color: #aaa;
+  }
+
+  #closeMenuBtn {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 12px;
+    background: rgba(255,255,255,.12);
+    color: white;
+    font-size: 24px;
+  }
+
+  .menu-item {
+    width: 100%;
+    height: 44px;
+    margin-bottom: 10px;
+    padding: 0 14px;
+    text-align: left;
+    border-radius: 14px;
+    background: rgba(255,255,255,.1);
+    color: white;
+    font-size: 15px;
+  }
+
+  .menu-item:active {
+    transform: scale(.98);
+  }
+
+  .login-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(0,0,0,.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+    z-index: 40;
+  }
+
+  .login-modal.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .login-card {
+    position: relative;
+    width: 100%;
+    max-width: 330px;
+    padding: 22px;
+    border-radius: 24px;
+    background: rgba(22,22,22,.96);
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow: 0 20px 60px rgba(0,0,0,.55);
+    text-align: center;
+  }
+
+  .login-card h2 {
+    margin: 0 0 8px;
+    font-size: 24px;
+  }
+
+  .login-card p {
+    margin: 0 0 16px;
+    color: #aaa;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .login-card input {
+    width: 100%;
+    height: 44px;
+    margin-bottom: 10px;
+    padding: 0 14px;
+    border: none;
+    border-radius: 14px;
+    background: rgba(255,255,255,.1);
+    color: white;
+    font-size: 15px;
+    outline: none;
+  }
+
+  .login-card input::placeholder {
+    color: #888;
+  }
+
+  #fakeLoginBtn {
+    width: 100%;
+    height: 44px;
+    margin-top: 4px;
+  }
+
+  .close-login {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 12px;
+    background: rgba(255,255,255,.12);
+    color: white;
+    font-size: 22px;
+  }
 </style>
 </head>
 
@@ -248,11 +410,39 @@
     <button class="icon-btn">☰</button>
     <button class="login-btn">Вход</button>
   </div>
+<div class="shade" id="shade"></div>
 
-  <div class="mode-buttons">
-    <button id="liveModeBtn">Версия 1</button>
-    <button id="scanModeBtn" class="secondary">Версия 2</button>
+<div class="side-menu" id="sideMenu">
+  <div class="side-menu-header">
+    <div>
+      <strong>Меню</strong>
+      <span>Настройки измерения</span>
+    </div>
+    <button id="closeMenuBtn">×</button>
   </div>
+
+  <button class="menu-item" id="resetLinesBtn">Сбросить линии</button>
+  <button class="menu-item" id="centerLinesBtn">Поставить по центру</button>
+  <button class="menu-item" id="shortLinesBtn">Короткие линии</button>
+  <button class="menu-item" id="longLinesBtn">Длинные линии</button>
+</div>
+
+<div class="login-modal" id="loginModal">
+  <div class="login-card">
+    <button class="close-login" id="closeLoginBtn">×</button>
+    <h2>Вход</h2>
+    <p>Пока это демо-окно. Здесь потом можно сделать авторизацию.</p>
+
+    <input type="text" placeholder="Имя">
+    <input type="password" placeholder="Пароль">
+
+    <button id="fakeLoginBtn">Войти</button>
+  </div>
+</div>
+<div class="top-bar">
+  <button class="icon-btn" id="menuBtn">☰</button>
+  <button class="login-btn" id="loginBtn">Вход</button>
+</div>
 
   <h1>Сравнение яркости</h1>
 
@@ -309,7 +499,20 @@ const cameraBox = document.getElementById("cameraBox");
 
 const liveModeBtn = document.getElementById("liveModeBtn");
 const scanModeBtn = document.getElementById("scanModeBtn");
+const menuBtn = document.getElementById("menuBtn");
+const closeMenuBtn = document.getElementById("closeMenuBtn");
+const sideMenu = document.getElementById("sideMenu");
+const shade = document.getElementById("shade");
 
+const loginBtn = document.getElementById("loginBtn");
+const loginModal = document.getElementById("loginModal");
+const closeLoginBtn = document.getElementById("closeLoginBtn");
+const fakeLoginBtn = document.getElementById("fakeLoginBtn");
+
+const resetLinesBtn = document.getElementById("resetLinesBtn");
+const centerLinesBtn = document.getElementById("centerLinesBtn");
+const shortLinesBtn = document.getElementById("shortLinesBtn");
+const longLinesBtn = document.getElementById("longLinesBtn");
 const hiddenCanvas = document.createElement("canvas");
 const hiddenCtx = hiddenCanvas.getContext("2d", { willReadFrequently: true });
 
@@ -335,7 +538,81 @@ let isScanning = false;
 let scanStartTime = 0;
 let scanData = [];
 let finalScanResult = null;
+function openMenu() {
+  sideMenu.classList.add("open");
+  shade.classList.add("open");
+}
 
+function closeMenu() {
+  sideMenu.classList.remove("open");
+  shade.classList.remove("open");
+}
+
+function openLogin() {
+  loginModal.classList.add("open");
+}
+
+function closeLogin() {
+  loginModal.classList.remove("open");
+}
+
+menuBtn.addEventListener("click", openMenu);
+closeMenuBtn.addEventListener("click", closeMenu);
+shade.addEventListener("click", closeMenu);
+
+loginBtn.addEventListener("click", openLogin);
+closeLoginBtn.addEventListener("click", closeLogin);
+
+loginModal.addEventListener("click", e => {
+  if (e.target === loginModal) closeLogin();
+});
+
+fakeLoginBtn.addEventListener("click", () => {
+  loginBtn.textContent = "Гость";
+  closeLogin();
+});
+
+resetLinesBtn.addEventListener("click", () => {
+  lines[0].x = 38;
+  lines[1].x = 62;
+  lineY1 = 25;
+  lineY2 = 75;
+  liveHistory = [];
+  scanData = [];
+  finalScanResult = null;
+  isScanning = false;
+  closeMenu();
+});
+
+centerLinesBtn.addEventListener("click", () => {
+  lines[0].x = 42;
+  lines[1].x = 58;
+  liveHistory = [];
+  scanData = [];
+  finalScanResult = null;
+  isScanning = false;
+  closeMenu();
+});
+
+shortLinesBtn.addEventListener("click", () => {
+  lineY1 = 35;
+  lineY2 = 65;
+  liveHistory = [];
+  scanData = [];
+  finalScanResult = null;
+  isScanning = false;
+  closeMenu();
+});
+
+longLinesBtn.addEventListener("click", () => {
+  lineY1 = 18;
+  lineY2 = 82;
+  liveHistory = [];
+  scanData = [];
+  finalScanResult = null;
+  isScanning = false;
+  closeMenu();
+});
 liveModeBtn.addEventListener("click", () => {
   mode = "live";
   isScanning = false;
