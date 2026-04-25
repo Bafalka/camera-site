@@ -47,9 +47,8 @@ body {
   padding:
     calc(env(safe-area-inset-top) + 8px)
     12px
-    calc(env(safe-area-inset-bottom) + 78px);
+    calc(env(safe-area-inset-bottom) + 12px);
 }
-
 .content {
   width: 100%;
   max-width: 390px;
@@ -62,38 +61,43 @@ body {
     38px
     auto
     auto
-    minmax(0, 1fr)
+    minmax(220px, 1fr)
     auto
-    auto
-    auto;
+    48px
+    28px;
   row-gap: 7px;
   overflow: hidden;
 }
 
-.top-bar,
-.mode-buttons,
-.camera-box,
-.result,
-.top-text,
-.bottom-text {
-  width: 100%;
-  min-width: 0;
-}
-
-.top-bar {
+.result {
+  height: 48px;
+  min-height: 48px;
+  padding: 0 8px;
+  font-size: clamp(22px, 6.4vw, 30px);
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+  z-index: 2;
 }
 
-button {
-  border: none;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #00ff88, #00b7ff);
-  color: black;
-  font-weight: 900;
-  cursor: pointer;
-  font-family: inherit;
+.bottom-text {
+  height: 28px;
+  min-height: 28px;
+  font-size: clamp(12px, 3.5vw, 15px);
+  line-height: 1;
+  color: #aaaaaa;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .icon-btn {
@@ -227,12 +231,12 @@ canvas {
 }
 
 @media (max-height: 720px) {
-  .app {
-    padding:
-      calc(env(safe-area-inset-top) + 5px)
-      10px
-      calc(env(safe-area-inset-bottom) + 70px);
-  }
+.app {
+  padding:
+    calc(env(safe-area-inset-top) + 5px)
+    10px
+    calc(env(safe-area-inset-bottom) + 10px);
+}
 
   .content {
     grid-template-rows:
@@ -450,13 +454,15 @@ canvas {
 <div class="app">
   <div class="content">
 
-    <div class="top-bar">
-      ...
-    </div>
+<div class="top-bar">
+  <button class="icon-btn" id="menuBtn">☰</button>
+  <button class="login-btn" id="loginBtn">Вход</button>
+</div>
 
-    <div class="mode-buttons">
-      ...
-    </div>
+<div class="mode-buttons">
+  <button id="liveModeBtn">Версия 1</button>
+  <button id="scanModeBtn" class="secondary">Версия 2</button>
+</div>
 
     <h1>Сравнение яркости</h1>
 
@@ -464,9 +470,11 @@ canvas {
       Двигайте линии пальцем. Высота меняется для обеих сразу.
     </div>
 
-    <div class="camera-box" id="cameraBox">
-      ...
-    </div>
+<div class="camera-box" id="cameraBox">
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="overlay"></canvas>
+  <button id="startBtn">Открыть камеру</button>
+</div>
 
     <button id="scanBtn">Сканировать 10 секунд</button>
 
