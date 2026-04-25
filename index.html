@@ -908,6 +908,7 @@ let lineY2 = 75;
 
 let activeLine = null;
 let resizingEdge = null;
+let isDraggingLine = false;
 
 const AVERAGE_TIME = 10000;
 
@@ -1161,7 +1162,7 @@ cameraBox.addEventListener("pointerdown", e => {
   if (e.target.closest("button")) return;
 
   e.preventDefault();
-
+  isDraggingLine = true;
   const pos = getPointerPercent(e);
   const visual = getVisualLines();
 
@@ -1243,6 +1244,7 @@ function stopDrag(e) {
 
   activeLine = null;
   resizingEdge = null;
+  isDraggingLine = false;
 
   liveHistory = [];
   scanData = [];
@@ -1253,7 +1255,6 @@ function stopDrag(e) {
     result.textContent = t("positionChanged");
   }
 }
-
 function getPointerPercent(e) {
   const rect = cameraBox.getBoundingClientRect();
 
@@ -1338,7 +1339,7 @@ function getVisualLines() {
   };
 }
 
-function getBrightness(line) {
+function getLineSample(line) {
   const w = hiddenCanvas.width;
   const h = hiddenCanvas.height;
 
@@ -1347,17 +1348,39 @@ function getBrightness(line) {
   const y2 = lineY2 / 100 * h;
 
   const steps = 120;
-  let total = 0;
+
+  let totalBrightness = 0;
+  let totalR = 0;
+  let totalG = 0;
+  let totalB = 0;
 
   for (let i = 0; i < steps; i++) {
     const t = i / (steps - 1);
     const y = clamp(Math.round(y1 + (y2 - y1) * t), 0, h - 1);
 
     const pixel = hiddenCtx.getImageData(x, y, 1, 1).data;
-    total += 0.299 * pixel[0] + 0.587 * pixel[1] + 0.114 * pixel[2];
+
+    const r = pixel[0];
+    const g = pixel[1];
+    const b = pixel[2];
+
+    totalR += r;
+    totalG += g;
+    totalB += b;
+
+    totalBrightness += 0.299 * r + 0.587 * g + 0.114 * b;
   }
 
-  return total / steps;
+  return {
+    brightness: totalBrightness / steps,
+    r: Math.round(totalR / steps),
+    g: Math.round(totalG / steps),
+    b: Math.round(totalB / steps)
+  };
+}
+
+function colorFromSample(sample, alpha = 0.8) {
+  return `rgba(${sample.r}, ${sample.g}, ${sample.b}, ${alpha})`;
 }
 
 function addLiveAverage(left, right) {
@@ -1407,26 +1430,33 @@ function formatResult(avg, digits) {
   return t("sameBrightness");
 }
 
-function drawLine(line, isDarker) {
+function drawLine(line, isDarker, color) {
   const box = cameraBox.getBoundingClientRect();
 
   const x = line.x / 100 * box.width;
   const y1 = lineY1 / 100 * box.height;
   const y2 = lineY2 / 100 * box.height;
 
-  ctx.lineWidth = 7;
   ctx.lineCap = "round";
 
-  ctx.strokeStyle = isDarker
-    ? "rgba(255, 70, 70, 0.55)"
-    : "rgba(0, 255, 150, 0.42)";
+  if (isDarker) {
+    ctx.lineWidth = 13;
+    ctx.strokeStyle = "rgba(255, 70, 70, 0.55)";
+    ctx.beginPath();
+    ctx.moveTo(x, y1);
+    ctx.lineTo(x, y2);
+    ctx.stroke();
+  }
+
+  ctx.lineWidth = 7;
+  ctx.strokeStyle = color;
 
   ctx.beginPath();
   ctx.moveTo(x, y1);
   ctx.lineTo(x, y2);
   ctx.stroke();
 
-  ctx.fillStyle = "rgba(255,255,255,0.45)";
+  ctx.fillStyle = color;
 
   ctx.beginPath();
   ctx.arc(x, y1, 8, 0, Math.PI * 2);
@@ -1435,6 +1465,17 @@ function drawLine(line, isDarker) {
   ctx.beginPath();
   ctx.arc(x, y2, 8, 0, Math.PI * 2);
   ctx.fill();
+
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "rgba(255,255,255,0.65)";
+
+  ctx.beginPath();
+  ctx.arc(x, y1, 8, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(x, y2, 8, 0, Math.PI * 2);
+  ctx.stroke();
 }
 
 function loop() {
@@ -1469,8 +1510,11 @@ function loop() {
 
     const visual = getVisualLines();
 
-    const leftNow = getBrightness(visual.left);
-    const rightNow = getBrightness(visual.right);
+    const leftSample = getLineSample(visual.left);
+    const rightSample = getLineSample(visual.right);
+
+    const leftNow = leftSample.brightness;
+    const rightNow = rightSample.brightness;
 
     let drawAverage = {
       left: leftNow,
@@ -1478,12 +1522,25 @@ function loop() {
     };
 
     if (mode === "live") {
-      addLiveAverage(leftNow, rightNow);
+      if (activeSource === "image") {
+        drawAverage = {
+          left: leftNow,
+          right: rightNow
+        };
 
-      const avg = getAverage(liveHistory);
-      drawAverage = avg || drawAverage;
+        if (!isDraggingLine) {
+          result.textContent = formatResult(drawAverage, 1);
+        }
+      }
 
-      result.textContent = formatResult(avg, 1);
+      if (activeSource === "camera") {
+        addLiveAverage(leftNow, rightNow);
+
+        const avg = getAverage(liveHistory);
+        drawAverage = avg || drawAverage;
+
+        result.textContent = formatResult(avg, 1);
+      }
     }
 
     if (mode === "scan") {
@@ -1511,13 +1568,21 @@ function loop() {
       }
     }
 
-    drawLine(visual.left, drawAverage.left < drawAverage.right);
-    drawLine(visual.right, drawAverage.right < drawAverage.left);
+    drawLine(
+      visual.left,
+      drawAverage.left < drawAverage.right,
+      colorFromSample(leftSample, 0.9)
+    );
+
+    drawLine(
+      visual.right,
+      drawAverage.right < drawAverage.left,
+      colorFromSample(rightSample, 0.9)
+    );
   }
 
   requestAnimationFrame(loop);
 }
-
 applyLanguage();
 loop();
 </script>
