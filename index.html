@@ -1165,8 +1165,8 @@ cameraBox.addEventListener("pointerdown", e => {
   const pos = getPointerPercent(e);
   const visual = getVisualLines();
 
-  const HANDLE_RADIUS = 7;
-  const LINE_TOUCH_RADIUS = 8;
+  const HANDLE_RADIUS = 10;
+  const LINE_TOUCH_RADIUS = 18;
 
   const leftTop = distance(pos.x, pos.y, visual.left.x, lineY1);
   const leftBottom = distance(pos.x, pos.y, visual.left.x, lineY2);
@@ -1176,23 +1176,30 @@ cameraBox.addEventListener("pointerdown", e => {
   const nearestHandle = Math.min(leftTop, leftBottom, rightTop, rightBottom);
 
   if (nearestHandle <= HANDLE_RADIUS) {
-    if (nearestHandle === leftTop || nearestHandle === rightTop) {
-      resizingEdge = "top";
-    } else {
-      resizingEdge = "bottom";
-    }
+    resizingEdge =
+      nearestHandle === leftTop || nearestHandle === rightTop
+        ? "top"
+        : "bottom";
 
     activeLine = null;
     cameraBox.setPointerCapture(e.pointerId);
     return;
   }
 
-  const withinY = pos.y >= lineY1 && pos.y <= lineY2;
-
   const dLeftLine = Math.abs(pos.x - visual.left.x);
   const dRightLine = Math.abs(pos.x - visual.right.x);
 
-  if (withinY && Math.min(dLeftLine, dRightLine) <= LINE_TOUCH_RADIUS) {
+  const nearLeftLine =
+    dLeftLine <= LINE_TOUCH_RADIUS &&
+    pos.y >= lineY1 - 8 &&
+    pos.y <= lineY2 + 8;
+
+  const nearRightLine =
+    dRightLine <= LINE_TOUCH_RADIUS &&
+    pos.y >= lineY1 - 8 &&
+    pos.y <= lineY2 + 8;
+
+  if (nearLeftLine || nearRightLine) {
     activeLine = dLeftLine <= dRightLine
       ? lines.indexOf(visual.left)
       : lines.indexOf(visual.right);
@@ -1202,27 +1209,25 @@ cameraBox.addEventListener("pointerdown", e => {
     return;
   }
 
-  activeLine = dLeftLine <= dRightLine
-    ? lines.indexOf(visual.left)
-    : lines.indexOf(visual.right);
-
+  activeLine = null;
   resizingEdge = null;
-  cameraBox.setPointerCapture(e.pointerId);
 });
 
 cameraBox.addEventListener("pointermove", e => {
-  e.preventDefault();
-
   if (activeLine === null && resizingEdge === null) return;
+
+  e.preventDefault();
 
   const pos = getPointerPercent(e);
 
   if (resizingEdge === "top") {
     lineY1 = clamp(pos.y, 5, lineY2 - 12);
+    return;
   }
 
   if (resizingEdge === "bottom") {
     lineY2 = clamp(pos.y, lineY1 + 12, 95);
+    return;
   }
 
   if (activeLine !== null) {
