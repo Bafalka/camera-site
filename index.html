@@ -41,14 +41,24 @@
     width: 100vw;
     height: var(--app-height, 100dvh);
     padding:
-      calc(env(safe-area-inset-top) + 5px)
-      10px
-      calc(env(safe-area-inset-bottom) + 5px);
+      calc(env(safe-area-inset-top) + 8px)
+      14px
+      calc(env(safe-area-inset-bottom) + 8px);
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    background: linear-gradient(135deg, #050505, #171717);
+  }
+
+  .content {
+    width: 100%;
+    max-width: 390px;
+    height: 100%;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     overflow: hidden;
-    background: linear-gradient(135deg, #050505, #171717);
   }
 
   .top-bar,
@@ -58,11 +68,10 @@
   .top-text,
   .bottom-text {
     width: 100%;
-    max-width: 390px;
   }
 
   .top-bar {
-    height: 32px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -80,38 +89,38 @@
   }
 
   .icon-btn {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     padding: 0;
-    border-radius: 12px;
-    font-size: 19px;
+    border-radius: 13px;
+    font-size: 20px;
     line-height: 1;
     background: rgba(255,255,255,.14);
     color: white;
   }
 
   .login-btn {
-    height: 32px;
-    padding: 0 12px;
-    border-radius: 12px;
-    font-size: 13px;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 13px;
+    font-size: 14px;
     background: rgba(255,255,255,.14);
     color: white;
   }
 
   .mode-buttons {
     display: flex;
-    gap: 7px;
-    margin-top: 6px;
+    gap: 8px;
+    margin-top: 8px;
     flex-shrink: 0;
   }
 
   .mode-buttons button {
     flex: 1;
     min-width: 0;
-    height: 32px;
+    height: 36px;
     padding: 0 6px;
-    font-size: 15px;
+    font-size: 16px;
     white-space: nowrap;
   }
 
@@ -121,17 +130,18 @@
   }
 
   h1 {
-    margin: 6px 0 3px;
-    font-size: 21px;
+    margin: 9px 0 4px;
+    font-size: 24px;
     line-height: 1;
     flex-shrink: 0;
     white-space: nowrap;
+    text-align: center;
   }
 
   .top-text {
-    margin-bottom: 6px;
-    font-size: 11px;
-    line-height: 1.15;
+    margin-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.2;
     color: #cfcfcf;
     text-align: center;
     flex-shrink: 0;
@@ -139,15 +149,15 @@
 
   .camera-box {
     position: relative;
-    height: min(47vh, 410px);
-    min-height: 310px;
-    border-radius: 21px;
+    flex: 1 1 auto;
+    min-height: 190px;
+    max-height: 430px;
+    border-radius: 22px;
     overflow: hidden;
     background: #111;
     box-shadow: 0 10px 26px rgba(0,0,0,.55);
     border: 2px solid rgba(255,255,255,.12);
     touch-action: none;
-    flex-shrink: 0;
   }
 
   video,
@@ -174,21 +184,21 @@
 
   #scanBtn {
     display: none;
-    margin-top: 9px;
-    height: 42px;
+    margin-top: 8px;
+    height: 40px;
     padding: 0 22px;
-    font-size: 17px;
+    font-size: 16px;
     flex-shrink: 0;
     max-width: 100%;
     white-space: nowrap;
   }
 
   .result {
-    margin-top: 8px;
-    min-height: 34px;
-    font-size: 18px;
+    margin-top: 9px;
+    min-height: 38px;
+    font-size: 20px;
     font-weight: 900;
-    line-height: 1.05;
+    line-height: 1.1;
     text-align: center;
     display: flex;
     align-items: center;
@@ -198,38 +208,66 @@
 
   .bottom-text {
     margin-top: 3px;
-    font-size: 11px;
-    line-height: 1.1;
+    font-size: 12px;
+    line-height: 1.15;
     color: #aaaaaa;
     text-align: center;
     flex-shrink: 0;
   }
 
   @media (max-height: 700px) {
-    .camera-box {
-      height: min(43vh, 360px);
-      min-height: 270px;
+    .app {
+      padding:
+        calc(env(safe-area-inset-top) + 6px)
+        14px
+        calc(env(safe-area-inset-bottom) + 6px);
+    }
+
+    .top-bar {
+      height: 32px;
+    }
+
+    .icon-btn,
+    .login-btn {
+      height: 32px;
+    }
+
+    .icon-btn {
+      width: 32px;
+    }
+
+    .mode-buttons {
+      margin-top: 6px;
+    }
+
+    .mode-buttons button {
+      height: 32px;
+      font-size: 15px;
     }
 
     h1 {
-      font-size: 19px;
-      margin-top: 4px;
+      font-size: 21px;
+      margin: 7px 0 3px;
     }
 
     .top-text {
-      font-size: 10px;
-      margin-bottom: 5px;
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+
+    .camera-box {
+      min-height: 170px;
     }
 
     #scanBtn {
-      height: 38px;
+      height: 36px;
       font-size: 15px;
-      margin-top: 7px;
+      margin-top: 6px;
     }
 
     .result {
-      font-size: 16px;
-      min-height: 30px;
+      font-size: 17px;
+      min-height: 32px;
       margin-top: 6px;
     }
 
@@ -237,7 +275,8 @@
       font-size: 10px;
     }
   }
-   .shade {
+
+  .shade {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,.45);
@@ -305,20 +344,16 @@
     font-size: 24px;
   }
 
-  .menu-item {
+  .menu-text {
     width: 100%;
-    height: 44px;
+    min-height: 44px;
     margin-bottom: 10px;
-    padding: 0 14px;
-    text-align: left;
+    padding: 12px 14px;
     border-radius: 14px;
     background: rgba(255,255,255,.1);
     color: white;
     font-size: 15px;
-  }
-
-  .menu-item:active {
-    transform: scale(.98);
+    font-weight: 800;
   }
 
   .login-modal {
@@ -405,37 +440,39 @@
 <body>
 
 <div class="app">
+  <div class="content">
 
-  <div class="top-bar">
-    <button class="icon-btn" id="menuBtn">☰</button>
-    <button class="login-btn" id="loginBtn">Вход</button>
+    <div class="top-bar">
+      <button class="icon-btn" id="menuBtn">☰</button>
+      <button class="login-btn" id="loginBtn">Вход</button>
+    </div>
+
+    <div class="mode-buttons">
+      <button id="liveModeBtn">Версия 1</button>
+      <button id="scanModeBtn" class="secondary">Версия 2</button>
+    </div>
+
+    <h1>Сравнение яркости</h1>
+
+    <div class="top-text">
+      Двигайте линии пальцем. Высота меняется для обеих сразу.
+    </div>
+
+    <div class="camera-box" id="cameraBox">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="overlay"></canvas>
+      <button id="startBtn">Открыть камеру</button>
+    </div>
+
+    <button id="scanBtn">Сканировать 10 секунд</button>
+
+    <div class="result" id="result">Камера не открыта</div>
+
+    <div class="bottom-text">
+      Более тёмная линия подсвечивается красным
+    </div>
+
   </div>
-
-  <div class="mode-buttons">
-    <button id="liveModeBtn">Версия 1</button>
-    <button id="scanModeBtn" class="secondary">Версия 2</button>
-  </div>
-
-  <h1>Сравнение яркости</h1>
-
-  <div class="top-text">
-    Двигайте линии пальцем. Высота меняется для обеих сразу.
-  </div>
-
-  <div class="camera-box" id="cameraBox">
-    <video id="video" autoplay playsinline muted></video>
-    <canvas id="overlay"></canvas>
-    <button id="startBtn">Открыть камеру</button>
-  </div>
-
-  <button id="scanBtn">Сканировать 10 секунд</button>
-
-  <div class="result" id="result">Камера не открыта</div>
-
-  <div class="bottom-text">
-    Более тёмная линия подсвечивается красным
-  </div>
-
 </div>
 
 <div class="shade" id="shade"></div>
@@ -444,15 +481,15 @@
   <div class="side-menu-header">
     <div>
       <strong>Меню</strong>
-      <span>Настройки измерения</span>
+      <span>Просто текст</span>
     </div>
     <button id="closeMenuBtn">×</button>
   </div>
 
-  <button class="menu-item" id="resetLinesBtn">Сбросить линии</button>
-  <button class="menu-item" id="centerLinesBtn">Поставить по центру</button>
-  <button class="menu-item" id="shortLinesBtn">Короткие линии</button>
-  <button class="menu-item" id="longLinesBtn">Длинные линии</button>
+  <div class="menu-text">Текст 1</div>
+  <div class="menu-text">Текст 2</div>
+  <div class="menu-text">Текст 3</div>
+  <div class="menu-text">Текст 4</div>
 </div>
 
 <div class="login-modal" id="loginModal">
@@ -502,6 +539,7 @@ const cameraBox = document.getElementById("cameraBox");
 
 const liveModeBtn = document.getElementById("liveModeBtn");
 const scanModeBtn = document.getElementById("scanModeBtn");
+
 const menuBtn = document.getElementById("menuBtn");
 const closeMenuBtn = document.getElementById("closeMenuBtn");
 const sideMenu = document.getElementById("sideMenu");
@@ -512,10 +550,6 @@ const loginModal = document.getElementById("loginModal");
 const closeLoginBtn = document.getElementById("closeLoginBtn");
 const fakeLoginBtn = document.getElementById("fakeLoginBtn");
 
-const resetLinesBtn = document.getElementById("resetLinesBtn");
-const centerLinesBtn = document.getElementById("centerLinesBtn");
-const shortLinesBtn = document.getElementById("shortLinesBtn");
-const longLinesBtn = document.getElementById("longLinesBtn");
 const hiddenCanvas = document.createElement("canvas");
 const hiddenCtx = hiddenCanvas.getContext("2d", { willReadFrequently: true });
 
@@ -541,6 +575,7 @@ let isScanning = false;
 let scanStartTime = 0;
 let scanData = [];
 let finalScanResult = null;
+
 function openMenu() {
   sideMenu.classList.add("open");
   shade.classList.add("open");
@@ -575,47 +610,6 @@ fakeLoginBtn.addEventListener("click", () => {
   closeLogin();
 });
 
-resetLinesBtn.addEventListener("click", () => {
-  lines[0].x = 38;
-  lines[1].x = 62;
-  lineY1 = 25;
-  lineY2 = 75;
-  liveHistory = [];
-  scanData = [];
-  finalScanResult = null;
-  isScanning = false;
-  closeMenu();
-});
-
-centerLinesBtn.addEventListener("click", () => {
-  lines[0].x = 42;
-  lines[1].x = 58;
-  liveHistory = [];
-  scanData = [];
-  finalScanResult = null;
-  isScanning = false;
-  closeMenu();
-});
-
-shortLinesBtn.addEventListener("click", () => {
-  lineY1 = 35;
-  lineY2 = 65;
-  liveHistory = [];
-  scanData = [];
-  finalScanResult = null;
-  isScanning = false;
-  closeMenu();
-});
-
-longLinesBtn.addEventListener("click", () => {
-  lineY1 = 18;
-  lineY2 = 82;
-  liveHistory = [];
-  scanData = [];
-  finalScanResult = null;
-  isScanning = false;
-  closeMenu();
-});
 liveModeBtn.addEventListener("click", () => {
   mode = "live";
   isScanning = false;
